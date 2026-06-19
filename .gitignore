@@ -10,3 +10,9 @@ env/
 .DS_Store
 Thumbs.db
 bakery.db
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
