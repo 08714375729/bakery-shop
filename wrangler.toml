@@ -9,4 +9,4 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "bakery-shop-db"
-database_id = "REEMPLAZA_CON_TU_DATABASE_ID"
+database_id = "70e1d32e-8189-4520-9ccf-c047b68d8ac0"
