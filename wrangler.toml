@@ -1,0 +1,12 @@
+name = "bakery-shop"
+main = "src/worker.js"
+compatibility_date = "2026-06-19"
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bakery-shop-db"
+database_id = "REEMPLAZA_CON_TU_DATABASE_ID"
