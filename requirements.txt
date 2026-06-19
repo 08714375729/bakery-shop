@@ -1,4 +1,0 @@
-# Flask 2.3.x：避免某些环境里 blinker 旧版本卸载失败的问题
-Flask==2.3.3
-Flask-SQLAlchemy==3.1.1
-Werkzeug==2.3.7
