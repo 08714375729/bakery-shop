@@ -1,1 +1,460 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sistema de Panadería</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body { background: #f8f9fa; }
+      .card { border-radius: 14px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+      .small-note { font-size: 12px; color: #6c757d; }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-light bg-white border-bottom sticky-top">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">🍞 Sistema de Panadería</span>
+        <div class="d-flex align-items-center gap-2">
+          <span id="whoami" class="small-note"></span>
+          <button class="btn btn-sm btn-outline-primary d-none" id="showPasswordBtn">Cambiar contraseña</button>
+          <button class="btn btn-sm btn-outline-danger d-none" id="logoutBtn">Salir</button>
+        </div>
+      </div>
+    </nav>
 
+    <div class="container my-3">
+      <div id="alertBox" class="alert d-none" role="alert"></div>
+
+      <div id="passwordBox" class="card shadow-sm d-none mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Cambiar contraseña</h5>
+            <button class="btn btn-sm btn-outline-secondary" id="hidePasswordBtn">×</button>
+          </div>
+          <form id="passwordForm" class="row g-2">
+            <div class="col-12 col-md-4">
+              <label class="form-label">Contraseña actual</label>
+              <input type="password" class="form-control" id="currentPassword" required />
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">Nueva contraseña</label>
+              <input type="password" class="form-control" id="newPassword" required />
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">Confirmar contraseña</label>
+              <input type="password" class="form-control" id="confirmPassword" required />
+            </div>
+            <div class="col-12 d-grid">
+              <button class="btn btn-primary">Guardar nueva contraseña</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="loginBox" class="row justify-content-center">
+        <div class="col-12 col-md-5">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h4 class="mb-3">Iniciar sesión</h4>
+              <form id="loginForm" class="row g-2">
+                <div class="col-12">
+                  <label class="form-label">Usuario</label>
+                  <input class="form-control" id="loginUsername" placeholder="Usuario" required />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Contraseña</label>
+                  <input type="password" class="form-control" id="loginPassword" placeholder="Contraseña" required />
+                </div>
+                <div class="col-12 d-grid">
+                  <button class="btn btn-primary">Entrar</button>
+                </div>
+              </form>
+              <div class="small-note mt-3">
+                <div>Cuenta inicial: <span class="mono">admin</span> / <span class="mono">admin123</span></div>
+                <div>Las cuentas de sucursal se crean al agregar una nueva sucursal.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="appBox" class="d-none">
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <h5 class="mb-2">Estado de la migración</h5>
+            <div class="small-note">
+              Esta versión en Cloudflare ya incluye: login, cambio de contraseña, sucursales, productos y precios por sucursal.
+              Los módulos de envíos, captura diaria y reportes completos siguen en migración.
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-lg-6 role-admin">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Sucursales</h5>
+                <form id="storeForm" class="row g-2">
+                  <div class="col-4">
+                    <input class="form-control" name="code" placeholder="Código" required />
+                  </div>
+                  <div class="col-8">
+                    <input class="form-control" name="name" placeholder="Nombre" required />
+                  </div>
+                  <div class="col-12">
+                    <input class="form-control" name="address" placeholder="Dirección" />
+                  </div>
+                  <div class="col-6">
+                    <select class="form-select" name="settlement_type">
+                      <option value="cash">cash</option>
+                      <option value="transfer">transfer</option>
+                      <option value="credit">credit</option>
+                    </select>
+                  </div>
+                  <div class="col-6 d-grid">
+                    <button class="btn btn-primary">Agregar sucursal</button>
+                  </div>
+                </form>
+                <hr />
+                <div class="table-responsive">
+                  <table class="table table-sm table-striped">
+                    <thead>
+                      <tr>
+                        <th>Código</th>
+                        <th>Sucursal</th>
+                        <th>Cuenta</th>
+                        <th>Clave inicial</th>
+                      </tr>
+                    </thead>
+                    <tbody id="storeTbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-6 role-admin">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Productos</h5>
+                <form id="productForm" class="row g-2">
+                  <div class="col-4">
+                    <input class="form-control" name="sku" placeholder="SKU" required />
+                  </div>
+                  <div class="col-8">
+                    <input class="form-control" name="name" placeholder="Nombre del pan" required />
+                  </div>
+                  <div class="col-4">
+                    <input class="form-control" name="category" placeholder="Categoría" value="General" />
+                  </div>
+                  <div class="col-4">
+                    <input class="form-control" name="unit" placeholder="Unidad" value="piece" />
+                  </div>
+                  <div class="col-4">
+                    <input class="form-control" name="default_price" placeholder="Precio base" value="0" />
+                  </div>
+                  <div class="col-12 d-grid">
+                    <button class="btn btn-primary">Agregar producto</button>
+                  </div>
+                </form>
+                <hr />
+                <div class="table-responsive">
+                  <table class="table table-sm table-striped">
+                    <thead>
+                      <tr>
+                        <th>SKU</th>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Unidad</th>
+                        <th>Precio base</th>
+                        <th>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody id="productTbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Precios por sucursal</h5>
+                <form id="priceForm" class="row g-2 role-admin">
+                  <div class="col-12 col-md-4">
+                    <select class="form-select" name="store_id" id="priceStore"></select>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <select class="form-select" name="product_id" id="priceProduct"></select>
+                  </div>
+                  <div class="col-6 col-md-2">
+                    <input class="form-control" name="price" placeholder="Precio" required />
+                  </div>
+                  <div class="col-6 col-md-2 d-grid">
+                    <button class="btn btn-primary">Guardar precio</button>
+                  </div>
+                </form>
+                <hr />
+                <div class="table-responsive">
+                  <table class="table table-sm table-striped">
+                    <thead>
+                      <tr>
+                        <th>Sucursal</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Desde</th>
+                      </tr>
+                    </thead>
+                    <tbody id="priceTbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+      const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+      let CURRENT_USER = null;
+      let STORES = [];
+      let PRODUCTS = [];
+
+      function showAlert(type, message) {
+        const box = $("#alertBox");
+        box.className = `alert alert-${type}`;
+        box.textContent = message;
+        box.classList.remove("d-none");
+        setTimeout(() => box.classList.add("d-none"), 3500);
+      }
+
+      function formatMoney(value) {
+        return Number(value || 0).toFixed(2);
+      }
+
+      async function readApiResponse(response) {
+        const text = await response.text();
+        if (!text) {
+          throw new Error(`Respuesta vacía del servidor (${response.status})`);
+        }
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (error) {
+          console.error("Respuesta no JSON:", text);
+          throw new Error(`Respuesta inválida del servidor (${response.status})`);
+        }
+
+        if (!response.ok || data.ok === false) {
+          throw new Error(data.error || data.message || "Error del servidor");
+        }
+
+        return data;
+      }
+
+      async function apiGet(url) {
+        const response = await fetch(url, { credentials: "same-origin" });
+        const data = await readApiResponse(response);
+        return data.data ?? data;
+      }
+
+      async function apiPost(url, body) {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify(body || {}),
+        });
+        const data = await readApiResponse(response);
+        return data.data ?? data;
+      }
+
+      function opt(list, textKey = "name") {
+        return list.map((item) => `<option value="${item.id}">${item[textKey]}</option>`).join("");
+      }
+
+      function setRoleUI() {
+        const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
+        $$(".role-admin").forEach((el) => el.classList.toggle("d-none", !isAdmin));
+        $("#logoutBtn").classList.toggle("d-none", !CURRENT_USER);
+        $("#showPasswordBtn").classList.toggle("d-none", !CURRENT_USER);
+        $("#whoami").textContent = CURRENT_USER
+          ? `${CURRENT_USER.display_name} (${CURRENT_USER.username})`
+          : "";
+      }
+
+      async function loadBase() {
+        STORES = await apiGet("/api/stores");
+        PRODUCTS = await apiGet("/api/products");
+        const prices = await apiGet("/api/prices");
+
+        $("#storeTbody").innerHTML = STORES.map((store) => `
+          <tr>
+            <td>${store.code}</td>
+            <td>${store.name}</td>
+            <td class="mono">${store.username || ""}</td>
+            <td>${store.default_password || ""}</td>
+          </tr>
+        `).join("");
+
+        $("#productTbody").innerHTML = PRODUCTS.map((product) => `
+          <tr>
+            <td class="mono">${product.sku}</td>
+            <td>${product.name}</td>
+            <td>${product.category || ""}</td>
+            <td>${product.unit || ""}</td>
+            <td>${formatMoney(product.default_price)}</td>
+            <td>
+              ${CURRENT_USER && CURRENT_USER.role === "admin"
+                ? `<button class="btn btn-sm btn-outline-danger product-delete-btn" data-product-id="${product.id}">Eliminar</button>`
+                : ""}
+            </td>
+          </tr>
+        `).join("");
+
+        $("#priceTbody").innerHTML = prices.map((price) => `
+          <tr>
+            <td>${price.store_name}</td>
+            <td>${price.product_name}</td>
+            <td>${formatMoney(price.price)}</td>
+            <td>${price.effective_from}</td>
+          </tr>
+        `).join("");
+
+        $("#priceStore").innerHTML = opt(STORES);
+        $("#priceProduct").innerHTML = opt(PRODUCTS);
+      }
+
+      async function checkLogin() {
+        const response = await fetch("/api/me", { credentials: "same-origin" });
+        const data = await readApiResponse(response);
+
+        if (data.authenticated && data.data) {
+          CURRENT_USER = data.data;
+          $("#loginBox").classList.add("d-none");
+          $("#appBox").classList.remove("d-none");
+          setRoleUI();
+          await loadBase();
+          return true;
+        }
+
+        CURRENT_USER = null;
+        $("#loginBox").classList.remove("d-none");
+        $("#appBox").classList.add("d-none");
+        setRoleUI();
+        return false;
+      }
+
+      async function main() {
+        $("#loginForm").onsubmit = async (event) => {
+          event.preventDefault();
+          try {
+            await apiPost("/api/login", {
+              username: $("#loginUsername").value,
+              password: $("#loginPassword").value,
+            });
+            showAlert("success", "Inicio de sesión correcto");
+            await checkLogin();
+          } catch (error) {
+            showAlert("danger", error.message);
+          }
+        };
+
+        $("#logoutBtn").onclick = async () => {
+          await apiPost("/api/logout", {});
+          $("#passwordBox").classList.add("d-none");
+          await checkLogin();
+        };
+
+        $("#showPasswordBtn").onclick = () => $("#passwordBox").classList.toggle("d-none");
+        $("#hidePasswordBtn").onclick = () => $("#passwordBox").classList.add("d-none");
+
+        $("#passwordForm").onsubmit = async (event) => {
+          event.preventDefault();
+          try {
+            await apiPost("/api/change-password", {
+              current_password: $("#currentPassword").value,
+              new_password: $("#newPassword").value,
+              confirm_password: $("#confirmPassword").value,
+            });
+            event.target.reset();
+            $("#passwordBox").classList.add("d-none");
+            showAlert("success", "Contraseña actualizada");
+          } catch (error) {
+            showAlert("danger", error.message);
+          }
+        };
+
+        $("#storeForm").onsubmit = async (event) => {
+          event.preventDefault();
+          try {
+            await apiPost("/api/stores", Object.fromEntries(new FormData(event.target).entries()));
+            event.target.reset();
+            await loadBase();
+            showAlert("success", "Sucursal agregada");
+          } catch (error) {
+            showAlert("danger", error.message);
+          }
+        };
+
+        $("#productForm").onsubmit = async (event) => {
+          event.preventDefault();
+          try {
+            await apiPost("/api/products", Object.fromEntries(new FormData(event.target).entries()));
+            event.target.reset();
+            await loadBase();
+            showAlert("success", "Producto agregado");
+          } catch (error) {
+            showAlert("danger", error.message);
+          }
+        };
+
+        $("#priceForm").onsubmit = async (event) => {
+          event.preventDefault();
+          try {
+            const data = Object.fromEntries(new FormData(event.target).entries());
+            data.store_id = Number(data.store_id);
+            data.product_id = Number(data.product_id);
+            data.effective_from = new Date().toISOString().slice(0, 10);
+            await apiPost("/api/prices", data);
+            await loadBase();
+            showAlert("success", "Precio guardado");
+          } catch (error) {
+            showAlert("danger", error.message);
+          }
+        };
+
+        $("#productTbody").onclick = async (event) => {
+          const button = event.target.closest(".product-delete-btn");
+          if (!button) return;
+          if (!confirm("¿Seguro que quieres eliminar este producto?")) return;
+
+          try {
+            await apiPost(`/api/products/${button.dataset.productId}/delete`, {});
+            await loadBase();
+            showAlert("success", "Producto eliminado");
+          } catch (error) {
+            showAlert("danger", error.message);
+          }
+        };
+
+        try {
+          await checkLogin();
+        } catch (error) {
+          showAlert("danger", error.message || "No se pudo cargar la sesión");
+        }
+      }
+
+      main();
+    </script>
+  </body>
+</html>
