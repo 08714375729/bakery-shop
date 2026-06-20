@@ -109,7 +109,6 @@ let schemaPromise = null;
 export default {
   async fetch(request, env) {
     try {
-      await ensureSchema(env);
       await ensureSeedData(env);
 
       const url = new URL(request.url);
