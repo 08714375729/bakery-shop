@@ -1,4 +1,4 @@
-# Cloudflare Workers
+ Cloudflare Workers
 
 Esta carpeta ya deja una base funcional para migrar la app a Cloudflare.
 
@@ -57,4 +57,5 @@ wrangler deploy
 
 - usuario: `admin`
 - contraseña: `admin123`
+
 El usuario se crea automáticamente en la primera petición si todavía no existe.
