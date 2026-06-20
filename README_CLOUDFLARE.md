@@ -57,5 +57,4 @@ wrangler deploy
 
 - usuario: `admin`
 - contraseña: `admin123`
-
 El usuario se crea automáticamente en la primera petición si todavía no existe.
